@@ -1,4 +1,8 @@
+from typing import Type
 import ray.tune as tune
+from omegaconf import OmegaConf
+from functools import partial
+from importlib import import_module
 
 def _convert(val: str) -> any:
     constructors = [int, float, str]
@@ -8,8 +12,22 @@ def _convert(val: str) -> any:
         except ValueError:
             pass
 
+def as_class(target: str):
+    module_name = ".".join(target.split(".")[:-1])
+    module = import_module(module_name)
 
-def apply_tune(config: dict):
+    classname = target.split(".")[-1]
+    cls = getattr(module, classname)
+
+    return cls
+
+def apply_tune(config, max_recursion=0):
+    cfg = OmegaConf.to_container(config, resolve=True)
+    for _ in range(max_recursion):
+        cfg = OmegaConf.create(cfg)
+        cfg = OmegaConf.to_container(cfg, True)
+
+
     result = {}
 
     for key, value in config.items():
@@ -41,4 +59,18 @@ def apply_tune(config: dict):
         else:
             result[key] = value
 
+
     return result
+
+def file_interpolation(x, type):
+    with open(x, 'r') as f:
+        return type(f.read())
+
+def json(x):
+    with open(x, 'r') as f:
+        return json.load(f)
+
+def initialize():
+    OmegaConf.register_resolver("json", json)
+    OmegaConf.register_resolver("file_int", partial(file_interpolation, int))
+    OmegaConf.register_resolver("file_float", partial(file_interpolation, float))

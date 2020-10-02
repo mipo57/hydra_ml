@@ -3,7 +3,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 setuptools.setup(
      name='hydra_ml',  
-     version='0.1',
+     version='0.2',
      scripts=[] ,
      author="Michał Pogoda",
      author_email="michalpogoda@hotmail.com",
