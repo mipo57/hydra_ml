@@ -70,7 +70,15 @@ def json(x):
     with open(x, 'r') as f:
         return json.load(f)
 
+def file_list(x):
+    with open(x, 'r') as f:
+        list_txt = f.read()
+        return list_txt.split("\n")
+
 def initialize():
     OmegaConf.register_resolver("json", json)
+    OmegaConf.register_resolver("file_dict", json)
+
+    OmegaConf.register_resolver("file_list", file_list)
     OmegaConf.register_resolver("file_int", partial(file_interpolation, int))
     OmegaConf.register_resolver("file_float", partial(file_interpolation, float))
